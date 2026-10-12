@@ -2,6 +2,8 @@
 
 A small analytics app. A tracking script records page views and clicks on any website, a Node.js API stores them in MongoDB, and a React dashboard shows each session's journey and a click heatmap for each page.
 
+**Live demo:** click around the [demo site](https://causalfunnel-analytics-n0mw.onrender.com/demo/index.html), then open the [dashboard](https://causalfunnel-analytics-n0mw.onrender.com) to see your session and the heatmap. It runs on Render's free tier, so the first load after a quiet spell can take about a minute.
+
 ![Sessions and user journey](docs/screenshots/journey.png)
 
 | Heatmap (dots) | Heatmap (grid) |
