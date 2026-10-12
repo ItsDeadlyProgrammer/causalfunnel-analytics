@@ -32,6 +32,15 @@ Then open:
 
 The API serves the dashboard, the tracker script and the demo site, so it all runs on one port.
 
+## Deploy (free)
+
+The app is one Docker service plus MongoDB, so it runs on free tiers:
+
+1. Create a free MongoDB Atlas M0 cluster. Add a database user, allow access from `0.0.0.0/0`, and copy the connection string. Add a database name to it, for example `.../causalfunnel_analytics?retryWrites=true&w=majority`.
+2. On Render, choose **New > Blueprint**, select this repository and paste the connection string as `MONGODB_URI`. `render.yaml` sets up a free Docker web service with `/health` as its health check.
+
+Render's free services sleep after 15 minutes without traffic, so the first request after that takes about a minute.
+
 ## Local development (without Docker for the app)
 
 Requirements: Node 18+ and MongoDB on `localhost:27017`. To run only MongoDB in Docker: `docker run -d -p 27017:27017 mongo:7.0`.
