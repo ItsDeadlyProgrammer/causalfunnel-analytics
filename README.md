@@ -115,7 +115,7 @@ Keeping a separate sessions collection makes the sessions list a cheap indexed, 
 - **Sessions:** a paginated list of sessions with view, click and total counts. Selecting one shows the journey: a timeline of every page view and click, with relative time, the clicked element and its coordinates.
 - **Heatmap:** pick a page to see its clicks, either as **dots** or as a **grid** of 40px cells showing click counts. With **Show page** on, the real page is drawn underneath so you can see what was clicked.
 - The URL keeps the current view (e.g. `#/sessions/<id>` or `#/heatmap?page=...`), so links can be shared and the back button works.
-- Works on mobile and supports dark mode.
+- Works on mobile.
 
 ## Tests
 

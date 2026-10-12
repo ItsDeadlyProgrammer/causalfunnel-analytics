@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
-import { navigate } from './useHashRoute.js';
 import { fmtDateTime, fmtDuration, fmtTime, shortId, shortPath } from './format.js';
 
 const PAGE_SIZE = 20;
@@ -30,27 +29,23 @@ export default function SessionsView({ selectedId }) {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
 
   return (
-    <div className="split">
-      <section className="panel sessions-panel">
-        <div className="panel-head">
-          <h2>Sessions {data && <span className="muted">({data.total})</span>}</h2>
-          <button className="ghost" onClick={load} disabled={loading}>
-            {loading ? 'Loading…' : 'Refresh'}
+    <div className="columns">
+      <section>
+        <div className="title-row">
+          <h2>Sessions{data ? ` (${data.total})` : ''}</h2>
+          <button onClick={load} disabled={loading}>
+            Refresh
           </button>
         </div>
-        {error && <p className="error">Could not load sessions: {error}</p>}
-        {data && data.sessions.length === 0 && (
-          <div className="empty">
-            No sessions yet. Open the <a href={api.demoUrl()} target="_blank" rel="noreferrer">demo site</a>, click
-            around, then press Refresh.
-          </div>
-        )}
+        {error && <p className="error">{error}</p>}
+        {data && data.sessions.length === 0 && <p className="muted">No sessions yet.</p>}
         {data && data.sessions.length > 0 && (
-          <div className="table-wrap">
-            <table className="table">
+          <div className="scroll-x">
+            <table>
               <thead>
                 <tr>
                   <th>Session</th>
+                  <th>Entry page</th>
                   <th>Last active</th>
                   <th className="num">Views</th>
                   <th className="num">Clicks</th>
@@ -59,21 +54,17 @@ export default function SessionsView({ selectedId }) {
               </thead>
               <tbody>
                 {data.sessions.map((s) => (
-                  <tr
-                    key={s.sessionId}
-                    className={s.sessionId === selectedId ? 'selected' : ''}
-                    onClick={() => navigate(`/sessions/${encodeURIComponent(s.sessionId)}`)}
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/sessions/${encodeURIComponent(s.sessionId)}`)}
-                  >
+                  <tr key={s.sessionId} className={s.sessionId === selectedId ? 'selected' : ''}>
                     <td>
-                      <code title={s.sessionId}>{shortId(s.sessionId)}</code>
-                      <div className="sub">{shortPath(s.entryPage)}</div>
+                      <a href={`#/sessions/${encodeURIComponent(s.sessionId)}`} title={s.sessionId}>
+                        {shortId(s.sessionId)}
+                      </a>
                     </td>
-                    <td>{fmtDateTime(s.lastSeen)}</td>
+                    <td>{shortPath(s.entryPage)}</td>
+                    <td className="nowrap">{fmtDateTime(s.lastSeen)}</td>
                     <td className="num">{s.pageViews}</td>
                     <td className="num">{s.clicks}</td>
-                    <td className="num strong">{s.eventCount}</td>
+                    <td className="num">{s.eventCount}</td>
                   </tr>
                 ))}
               </tbody>
@@ -81,23 +72,19 @@ export default function SessionsView({ selectedId }) {
           </div>
         )}
         {data && totalPages > 1 && (
-          <div className="pager">
-            <button className="ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              ← Prev
+          <p className="pager">
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              Previous
+            </button>{' '}
+            Page {page} of {totalPages}{' '}
+            <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              Next
             </button>
-            <span className="muted">
-              Page {page} of {totalPages}
-            </span>
-            <button className="ghost" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-              Next →
-            </button>
-          </div>
+          </p>
         )}
       </section>
 
-      <section className="panel journey-panel">
-        {selectedId ? <Journey sessionId={selectedId} /> : <div className="empty">Select a session to see its user journey.</div>}
-      </section>
+      <section>{selectedId ? <Journey sessionId={selectedId} /> : <p className="muted">Click a session to see its events.</p>}</section>
     </div>
   );
 }
@@ -119,65 +106,53 @@ function Journey({ sessionId }) {
     };
   }, [sessionId]);
 
-  if (error) return <p className="error">Could not load session: {error}</p>;
-  if (!data) return <p className="muted">Loading journey…</p>;
+  if (error) return <p className="error">{error}</p>;
+  if (!data) return <p className="muted">Loading…</p>;
 
   const { session, events } = data;
   const start = new Date(session.firstSeen).getTime();
 
   return (
     <>
-      <div className="panel-head">
-        <h2>User journey</h2>
-        <code className="muted" title={session.sessionId}>
-          {session.sessionId}
-        </code>
+      <h2>Session {shortId(session.sessionId)}</h2>
+      <p className="muted">
+        {session.eventCount} events, {session.pageViews} page views, {session.clicks} clicks, lasted{' '}
+        {fmtDuration(new Date(session.lastSeen) - start)}
+      </p>
+      <div className="scroll-x">
+        <table className="events">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Page</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map((e) => (
+              <tr key={e._id}>
+                <td className="nowrap">{fmtTime(e.timestamp)}</td>
+                <td className="nowrap">{e.type === 'page_view' ? 'Page view' : 'Click'}</td>
+                <td>
+                  <a href={e.url} target="_blank" rel="noreferrer">
+                    {shortPath(e.url)}
+                  </a>
+                </td>
+                <td className="details">
+                  {e.type === 'click' ? (
+                    <>
+                      {e.target && <code>{e.target}</code>} at ({e.x}, {e.y})
+                    </>
+                  ) : (
+                    e.title
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="stats">
-        <Stat label="Events" value={session.eventCount} />
-        <Stat label="Page views" value={session.pageViews} />
-        <Stat label="Clicks" value={session.clicks} />
-        <Stat label="Duration" value={fmtDuration(new Date(session.lastSeen) - start)} />
-      </div>
-      <ol className="timeline">
-        {events.map((e) => (
-          <li key={e._id} className={`tl-item ${e.type}`}>
-            <span className="tl-dot" aria-hidden="true" />
-            <div className="tl-body">
-              <div className="tl-head">
-                <span className={`badge ${e.type}`}>{e.type === 'page_view' ? 'Page view' : 'Click'}</span>
-                <span className="tl-time">
-                  {fmtTime(e.timestamp)} <span className="muted">+{fmtDuration(new Date(e.timestamp) - start)}</span>
-                </span>
-              </div>
-              <div className="tl-detail">
-                <a href={e.url} target="_blank" rel="noreferrer" title={e.url}>
-                  {shortPath(e.url)}
-                </a>
-                {e.type === 'page_view' && e.title && <span className="muted"> · {e.title}</span>}
-                {e.type === 'click' && (
-                  <>
-                    <span className="muted">
-                      {' '}
-                      · ({e.x}, {e.y})
-                    </span>
-                    {e.target && <div className="target">{e.target}</div>}
-                  </>
-                )}
-              </div>
-            </div>
-          </li>
-        ))}
-      </ol>
     </>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div className="stat">
-      <div className="stat-value">{value}</div>
-      <div className="stat-label">{label}</div>
-    </div>
   );
 }

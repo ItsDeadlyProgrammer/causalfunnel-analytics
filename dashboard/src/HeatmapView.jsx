@@ -65,51 +65,38 @@ export default function HeatmapView({ pageUrl }) {
   }, [pageUrl]);
 
   return (
-    <section className="panel">
-      <div className="panel-head heatmap-head">
-        <h2>Click heatmap</h2>
-        <div className="controls">
-          <label>
-            Page{' '}
-            <select
-              value={pageUrl || ''}
-              onChange={(e) => navigate(`/heatmap?page=${encodeURIComponent(e.target.value)}`)}
-              disabled={!pages || pages.length === 0}
-            >
-              {!pageUrl && <option value="">Select a page…</option>}
-              {pages?.map((p) => (
-                <option key={p.pageUrl} value={p.pageUrl}>
-                  {p.pageUrl} ({p.clicks} clicks)
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="segmented" role="group" aria-label="Display">
-            <button className={display === 'dots' ? 'active' : ''} onClick={() => setDisplay('dots')}>
-              Dots
-            </button>
-            <button className={display === 'grid' ? 'active' : ''} onClick={() => setDisplay('grid')}>
-              Grid
-            </button>
-          </div>
-          <label className="check">
-            <input type="checkbox" checked={showPage} onChange={(e) => setShowPage(e.target.checked)} /> Show page
-          </label>
-        </div>
+    <section>
+      <h2>Heatmap</h2>
+      <div className="controls">
+        <select
+          aria-label="Page"
+          value={pageUrl || ''}
+          onChange={(e) => navigate(`/heatmap?page=${encodeURIComponent(e.target.value)}`)}
+          disabled={!pages || pages.length === 0}
+        >
+          {!pageUrl && <option value="">Choose a page</option>}
+          {pages?.map((p) => (
+            <option key={p.pageUrl} value={p.pageUrl}>
+              {p.pageUrl} ({p.clicks} clicks)
+            </option>
+          ))}
+        </select>
+        <label>
+          <input type="radio" name="display" checked={display === 'dots'} onChange={() => setDisplay('dots')} /> Dots
+        </label>
+        <label>
+          <input type="radio" name="display" checked={display === 'grid'} onChange={() => setDisplay('grid')} /> Grid
+        </label>
+        <label>
+          <input type="checkbox" checked={showPage} onChange={(e) => setShowPage(e.target.checked)} /> Show page
+        </label>
       </div>
       {error && <p className="error">{error}</p>}
-      {pages && pages.length === 0 && (
-        <div className="empty">
-          No pages tracked yet. Open the <a href={api.demoUrl()} target="_blank" rel="noreferrer">demo site</a> and click
-          around.
-        </div>
-      )}
-      {pageUrl && !heatmap && !error && <p className="muted">Loading clicks…</p>}
+      {pages && pages.length === 0 && <p className="muted">No pages tracked yet.</p>}
+      {pageUrl && !heatmap && !error && <p className="muted">Loading…</p>}
       {heatmap && (
         <>
-          <p className="muted summary">
-            <strong>{heatmap.count}</strong> clicks on <code>{heatmap.pageUrl}</code>
-          </p>
+          <p className="muted">{heatmap.count} clicks</p>
           <HeatmapCanvas clicks={heatmap.clicks} pageUrl={heatmap.pageUrl} display={display} showPage={showPage} />
         </>
       )}
@@ -163,7 +150,7 @@ function HeatmapCanvas({ clicks, pageUrl, display, showPage }) {
                 <span
                   key={i}
                   className="dot"
-                  style={{ left: p.x, top: p.y, width: 18 / scale, height: 18 / scale }}
+                  style={{ left: p.x, top: p.y, width: 14 / scale, height: 14 / scale }}
                   title={p.target || `${Math.round(p.x)}, ${p.y}`}
                 />
               ))}
@@ -177,7 +164,7 @@ function HeatmapCanvas({ clicks, pageUrl, display, showPage }) {
                     top: c.cy * GRID_CELL,
                     width: GRID_CELL,
                     height: GRID_CELL,
-                    background: `rgba(234, 67, 53, ${0.15 + 0.7 * c.intensity})`,
+                    background: `rgba(220, 38, 38, ${0.15 + 0.65 * c.intensity})`,
                   }}
                   title={`${c.n} click${c.n === 1 ? '' : 's'}`}
                 >
@@ -187,9 +174,6 @@ function HeatmapCanvas({ clicks, pageUrl, display, showPage }) {
           </div>
         </div>
       )}
-      <p className="muted footnote">
-        Reference width {refWidth}px. Clicks from other screen sizes are scaled horizontally to fit.
-      </p>
     </div>
   );
 }

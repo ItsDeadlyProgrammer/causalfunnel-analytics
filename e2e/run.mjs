@@ -105,14 +105,14 @@ dash.on('pageerror', (e) => errors.push(e.message));
 dash.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
 await dash.goto(`${BASE}/#/sessions`, { waitUntil: 'networkidle0' });
-await dash.waitForSelector('.table tbody tr');
+await dash.waitForSelector('table tbody tr');
 await dash.screenshot({ path: shot('sessions.png') });
-const rowCount = await dash.$$eval('.table tbody tr', (r) => r.length);
+const rowCount = await dash.$$eval('table tbody tr', (r) => r.length);
 check(rowCount >= 2, `dashboard lists sessions (${rowCount} rows)`);
 
-await dash.click('.table tbody tr');
-await dash.waitForSelector('.timeline .tl-item');
-const tl = await dash.$$eval('.timeline .tl-item', (r) => r.length);
+await dash.click('table tbody tr a');
+await dash.waitForSelector('.events tbody tr');
+const tl = await dash.$$eval('.events tbody tr', (r) => r.length);
 check(tl > 0, `clicking a session shows its journey (${tl} timeline items)`);
 await dash.screenshot({ path: shot('journey.png'), fullPage: true });
 
@@ -124,7 +124,7 @@ check(dots === heat.count, `heatmap renders one dot per click (${dots})`);
 await sleep(800); // let the preview iframe paint
 await dash.screenshot({ path: shot('heatmap-dots.png') });
 
-await dash.click('.segmented button:nth-child(2)');
+await dash.click('.controls label:nth-of-type(2) input');
 await dash.waitForSelector('.cell');
 await dash.screenshot({ path: shot('heatmap-grid.png') });
 
@@ -136,7 +136,7 @@ check(final.total === after.total, 'viewing the heatmap preview does not record 
 // Mobile layout renders without horizontal overflow.
 await dash.setViewport({ width: 390, height: 844 });
 await dash.goto(`${BASE}/#/sessions/${s1}`, { waitUntil: 'networkidle0' });
-await dash.waitForSelector('.timeline .tl-item');
+await dash.waitForSelector('.events tbody tr');
 const overflow = await dash.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 check(overflow <= 0, `mobile layout has no horizontal scroll (overflow ${overflow}px)`);
 await dash.screenshot({ path: shot('mobile.png') });
