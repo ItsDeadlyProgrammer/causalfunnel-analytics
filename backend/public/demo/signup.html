@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ShopFlow – Sign up</title><link rel="stylesheet" href="style.css"><script src="/tracker.js" async data-debug="true"></script></head>
+<body><header><a class="logo" href="index.html">ShopFlow</a><nav><a href="index.html" id="nav-home">Home</a><a href="pricing.html" id="nav-pricing">Pricing</a><a href="signup.html" id="nav-signup">Sign up</a></nav></header><main><div class="note">Demo site for the analytics tracker. Every page view and click here is recorded; open the dashboard to see your session.</div>
+<h1>Create your account</h1>
+<form id="signup-form" onsubmit="event.preventDefault(); document.getElementById('done').hidden = false;">
+<input id="email" type="email" placeholder="you@example.com" required>
+<input id="store" type="text" placeholder="Store name">
+<button class="btn btn-primary" id="signup-submit" type="submit">Create account</button>
+</form>
+<p id="done" hidden>Thanks! (Demo only, nothing was created.)</p>
+</main><footer>ShopFlow demo &middot; tracked by <code>/tracker.js</code></footer></body></html>

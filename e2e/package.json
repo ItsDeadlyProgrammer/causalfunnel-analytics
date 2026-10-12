@@ -1,0 +1,11 @@
+{
+  "name": "causalfunnel-analytics-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "24.10.0"
+  }
+}
